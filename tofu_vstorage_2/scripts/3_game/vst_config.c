@@ -1,8 +1,7 @@
 class VST_Config
 {	
 		
-	static const string CONFIG_ROOT = "$profile:ToFuVStorage/";
-    static const string FULLPATH = "$profile:ToFuVStorage/VST_Config.json";
+    static const string FULLPATH = SERIALIZATION_FOLDER + "VST_Config.json";
 	
 	protected int script_logging = 0;
 	
@@ -17,9 +16,9 @@ class VST_Config
 		if (GetGame().IsServer())
 		{			
 		
-			if (!FileExist(CONFIG_ROOT))
+			if (!FileExist(SERIALIZATION_FOLDER))
 			{
-				MakeDirectory(CONFIG_ROOT);
+				MakeDirectory(SERIALIZATION_FOLDER);
 			}
 
 			if (!FileExist(FULLPATH))

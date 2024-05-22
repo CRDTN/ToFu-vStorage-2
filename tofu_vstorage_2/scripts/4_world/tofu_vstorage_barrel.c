@@ -528,7 +528,7 @@ class tofu_vstorage_barrel: Barrel_Red {
 		FileSerializer openfile = new FileSerializer();
 		tofuvStorageContainer loadedContainerObj = new tofuvStorageContainer() ;
 		
-		if (openfile.Open("$profile:ToFuVStorage/" + filename, FileMode.READ)) {
+		if (openfile.Open(SERIALIZATION_FOLDER + filename, FileMode.READ)) {
 			if(openfile.Read(loadedContainerObj)) {
 				foreach(tofuvStorageObj item : loadedContainerObj.storedItems) {
 					if(!vrestore(item, this, player))
@@ -539,8 +539,8 @@ class tofu_vstorage_barrel: Barrel_Red {
 			
 			if(this.GetType() == "tofu_vstorage_q_barrel_express" || this.GetType() == "tofu_vstorage_q_barrel_travel")
 			{
-				if (FileExist("$profile:ToFuVStorage/"+filename)) {
-					DeleteFile("$profile:ToFuVStorage/"+filename);
+				if (FileExist(SERIALIZATION_FOLDER+filename)) {
+					DeleteFile(SERIALIZATION_FOLDER+filename);
 					//Print("[vStorage] DELETED FILE "+filename_q);
 				}
 			}
@@ -617,7 +617,7 @@ class tofu_vstorage_barrel: Barrel_Red {
 		{
 			EntityAI item_in_storage = items.Get(i);
 			if (item_in_storage)
-				containerObj.storedItems.Insert(vstore(item_in_storage));
+				containerObj.storedItems.Insert(vstore(item_in_storage, m_didVStorage));
 		}
 		
 		if(count==1)
@@ -628,7 +628,7 @@ class tofu_vstorage_barrel: Barrel_Red {
 		//Print("[vStorage] vclose() ");
 		
 		FileSerializer file = new FileSerializer();
-		if (file.Open("$profile:ToFuVStorage/" + filename, FileMode.WRITE))
+		if (file.Open(SERIALIZATION_FOLDER + filename, FileMode.WRITE))
 		{
 			if(file.Write(containerObj))
 			{
@@ -647,6 +647,9 @@ class tofu_vstorage_barrel: Barrel_Red {
 			//Print("Content Serialized and saved");
 		}
 
+        // Save as Json
+        JsonFileLoader<tofuvStorageContainer>.JsonSaveFile(SERIALIZATION_FOLDER + filename, containerObj);
+
 		//Print("[vStorage] vclose() end");
 
 		m_Openable.Close();
@@ -661,171 +664,6 @@ class tofu_vstorage_barrel: Barrel_Red {
 		UpdateVisualState();
 	}
 
-	tofuvStorageObj vstore(EntityAI item_in_storage)
-	{
-		autoptr tofuvStorageObj itemObj = new tofuvStorageObj();
-		InventoryLocation item_in_storage_location = new InventoryLocation;
-		item_in_storage.GetInventory().GetCurrentInventoryLocation( item_in_storage_location );
-		ItemBase item_to_check = ItemBase.Cast(item_in_storage);
-		
-		itemObj.itemName = item_in_storage.GetType();
-		itemObj.itemRow = item_in_storage_location.GetRow();
-		itemObj.itemCol = item_in_storage_location.GetCol();
-		itemObj.itemFliped = item_in_storage_location.GetFlip();
-		itemObj.itemIdx = item_in_storage_location.GetIdx();
-		itemObj.itemSlotId = item_in_storage_location.GetSlot();
-		itemObj.itemInventoryType = item_in_storage_location.GetType();
-		
-		if(item_to_check.HasQuantity())
-		{
-			itemObj.itemQuantity = item_to_check.GetQuantity();
-			if(item_to_check.IsLiquidContainer())
-				itemObj.itemLiquidType = item_to_check.GetLiquidType();
-		} else
-		{
-			itemObj.itemQuantity = 0;
-			itemObj.itemLiquidType = 0;
-		}
-		
-		if(item_in_storage.m_EM)
-		{
-			itemObj.itemEnergy =  Math.Ceil(item_in_storage.m_EM.GetEnergy());
-			itemObj.itemHasEnergy = true;
-		}
-		
-		Magazine magazine_check = Magazine.Cast(item_in_storage);
-		Ammunition_Base ammo_check = Ammunition_Base.Cast(item_in_storage);
-
-		if(item_in_storage.IsMagazine() && !(ammo_check && ammo_check.IsAmmoPile()))
-		{
-			itemObj.itemType = "magazine";
-			itemObj.itemAmmoQuantity = magazine_check.GetAmmoCount();
-			
-			for (int f = 0; f < magazine_check.GetAmmoCount(); f++)
-			{
-				float dmg;
-				string class_name;
-				magazine_check.GetCartridgeAtIndex(f, dmg, class_name);
-				string ma_temp = f.ToString() + "," + class_name;
-				
-				itemObj.itemMagInhalt.Insert(ma_temp);
-			}
-			//Print("MAGAZINE AMMO: "+magazine_check.GetAmmoCount());
-		}
-		
-		array<string> a_itemWpnBarrelInfo = new array<string>;
-		array<string> a_itemWpnInternalMagInfo = new array<string>;
-				
-		if(item_in_storage.IsWeapon())
-		{
-			Weapon_Base wpn = Weapon_Base.Cast(item_in_storage);
-			float damage = 0.0;
-			string type;
-			string itemWpnBarrelInfo;
-			string itemWpnInternalMagInfo;
-			
-			for (int mi = 0; mi < wpn.GetMuzzleCount(); ++mi)
-			{
-				if (!wpn.IsChamberEmpty(mi))
-				{
-					if (wpn.GetCartridgeInfo(mi, damage, type))
-					{
-						//Print ("[Im Lauf] " +mi+" "+damage+" "+type);
-						string bi_temp = ""+mi+","+type;
-						a_itemWpnBarrelInfo.Insert(bi_temp);
-						//PushCartridgeToChamber(mi, damage, type);
-					}
-				}
-				
-				for (int ci = 0; ci < wpn.GetInternalMagazineCartridgeCount(mi); ++ci)
-				{
-					if (wpn.GetInternalMagazineCartridgeInfo(mi, ci, damage, type))
-					{
-						//Print ("[In internen Mag] " +mi+" "+ci+" "+damage+" "+type);
-						string ci_temp = ""+mi+","+type;
-						a_itemWpnInternalMagInfo.Insert(ci_temp);
-						//PushCartridgeToInternalMagazine(mi, damage, type);
-					}
-				}
-			}
-			
-			if(a_itemWpnBarrelInfo.Count() > 0)
-			{
-				for (int bi = 0; bi < a_itemWpnBarrelInfo.Count(); bi++)
-				{
-					itemWpnBarrelInfo += a_itemWpnBarrelInfo.Get(bi)+"|";
-				}
-				itemObj.itemWpnBarrelInfo = itemWpnBarrelInfo;
-				//Print(itemWpnBarrelInfo);
-			}
-			
-			if(a_itemWpnInternalMagInfo.Count() > 0)
-			{
-				for (int im = 0; im < a_itemWpnInternalMagInfo.Count(); im++)
-				{
-					itemWpnInternalMagInfo += a_itemWpnInternalMagInfo.Get(im)+"|";
-				}
-				itemObj.itemWpnInternalMagInfo = itemWpnInternalMagInfo;
-				//Print(itemWpnInternalMagInfo);
-			}
-		}
-		
-		if(ammo_check && ammo_check.IsAmmoPile())
-		{
-			itemObj.itemAmmoQuantity = ammo_check.GetAmmoCount();
-		}
-		
-		itemObj.itemHealth = item_in_storage.GetHealth();
-						
-		if(item_in_storage.IsFood())
-		{
-			Edible_Base item_to_check_food = Edible_Base.Cast(item_in_storage);
-			if(item_to_check_food)
-			{
-				itemObj.itemFoodstage = item_to_check_food.GetFoodStageType();
-			}
-		}
-		
-		itemObj.itemTemp = item_to_check.GetTemperature();
-		itemObj.itemWetness = item_to_check.GetWet();
-		
-		
-		array<EntityAI> items = new array<EntityAI>;
-		item_in_storage.GetInventory().EnumerateInventory(InventoryTraversalType.LEVELORDER, items);
-		int count = items.Count();
-		for (int i = 0; i < count; i++)
-		{
-			EntityAI item_in_storage_child = items.Get(i);
-			if (item_in_storage_child) {
-				itemObj.itemChildren.Insert(vstore(item_in_storage_child));
-				m_didVStorage = true;
-			}
-		};
-		
-		
-		/*
-		Print("------- NEW ITEM ---------");
-		Print(itemObj.itemName);
-		Print(itemObj.itemType);
-		Print(itemObj.itemRow);
-		Print(itemObj.itemCol);
-		Print(itemObj.itemFliped);
-		Print(itemObj.itemQuantity);
-		Print(itemObj.itemAmmoQuantity);
-		Print(itemObj.itemHealth);
-		Print(itemObj.itemLiquidType);
-		Print(itemObj.itemFoodstage);
-		Print(itemObj.itemTemp);
-		Print(itemObj.itemWetness);
-		Print(itemObj.itemInventoryType);
-		Print(itemObj.itemIdx);
-		Print(itemObj.itemSlotId);
-		Print(itemObj.itemChildren);
-		Print("----------------");
-		*/
-		
-		return itemObj;
-	}
 	
 	bool vrestore(tofuvStorageObj item, Object target_object, PlayerBase player)
 	{

@@ -1,13 +1,8 @@
 class ToFu_Vstorage_Config
-{
-		
-	const protected static string m_ProfilePath = "$profile:";
-	const protected static string m_DatabaseFolderName = "ToFuVStorage";
-		
+{		
 	protected TStringArray m_BlacklistItems;
 	protected bool m_DoBackups;
-		
-	
+			
 	void ToFu_Vstorage_Config(bool backup, TStringArray blacklistitems)
 	{
 		m_DoBackups = backup;
@@ -19,14 +14,14 @@ class ToFu_Vstorage_Config
 		
 		ToFu_Vstorage_Config crateConfig = new ToFu_Vstorage_Config(backup, blacklistitems);
 		
-		if (!FileExist(m_ProfilePath + m_DatabaseFolderName + "/"))
+		if (!FileExist(SERIALIZATION_FOLDER + "/"))
         {
-			MakeDirectory(m_ProfilePath + m_DatabaseFolderName + "/");
+			MakeDirectory(SERIALIZATION_FOLDER + "/");
 		}
 		
 		
-		if (FileExist(m_ProfilePath + m_DatabaseFolderName + "/tofu_vstorage_config.json")) {
-			JsonFileLoader<ToFu_Vstorage_Config>.JsonLoadFile(m_ProfilePath + m_DatabaseFolderName + "/tofu_vstorage_config.json", crateConfig);
+		if (FileExist(SERIALIZATION_FOLDER + "/tofu_vstorage_config.json")) {
+			JsonFileLoader<ToFu_Vstorage_Config>.JsonLoadFile(SERIALIZATION_FOLDER + "/tofu_vstorage_config.json", crateConfig);
 		} else {
 			crateConfig = CreateDefaultCrateConfig(backup,blacklistitems);
 		}
@@ -49,7 +44,7 @@ class ToFu_Vstorage_Config
 			return;
 		}
 		
-		JsonFileLoader<ToFu_Vstorage_Config>.JsonSaveFile(m_ProfilePath + m_DatabaseFolderName + "/tofu_vstorage_config.json", crateConfig);
+		JsonFileLoader<ToFu_Vstorage_Config>.JsonSaveFile(SERIALIZATION_FOLDER+ "/tofu_vstorage_config.json", crateConfig);
 	}
 		
 	TStringArray GetBlacklistItems() {
