@@ -14,14 +14,14 @@ class ToFu_Vstorage_Config
 		
 		ToFu_Vstorage_Config crateConfig = new ToFu_Vstorage_Config(backup, blacklistitems);
 		
-		if (!FileExist(SERIALIZATION_FOLDER + "/"))
+		if (!FileExist("$profile:CRDTN/Storage" + "/"))
         {
-			MakeDirectory(SERIALIZATION_FOLDER + "/");
+			MakeDirectory("$profile:CRDTN/Storage" + "/");
 		}
 		
 		
-		if (FileExist(SERIALIZATION_FOLDER + "/tofu_vstorage_config.json")) {
-			JsonFileLoader<ToFu_Vstorage_Config>.JsonLoadFile(SERIALIZATION_FOLDER + "/tofu_vstorage_config.json", crateConfig);
+		if (FileExist("$profile:CRDTN/Storage/tofu_vstorage_config.json")) {
+			JsonFileLoader<ToFu_Vstorage_Config>.JsonLoadFile("$profile:CRDTN/Storage/tofu_vstorage_config.json", crateConfig);
 		} else {
 			crateConfig = CreateDefaultCrateConfig(backup,blacklistitems);
 		}
@@ -44,7 +44,7 @@ class ToFu_Vstorage_Config
 			return;
 		}
 		
-		JsonFileLoader<ToFu_Vstorage_Config>.JsonSaveFile(SERIALIZATION_FOLDER+ "/tofu_vstorage_config.json", crateConfig);
+		JsonFileLoader<ToFu_Vstorage_Config>.JsonSaveFile("$profile:CRDTN/Storage/tofu_vstorage_config.json", crateConfig);
 	}
 		
 	TStringArray GetBlacklistItems() {

@@ -1,7 +1,7 @@
 class VST_Config
 {	
 		
-    static const string FULLPATH = SERIALIZATION_FOLDER + "VST_Config.json";
+    static const string FULLPATH = "$profile:CRDTN/Storage/VST_Config.json";
 	
 	protected int script_logging = 0;
 	
@@ -16,9 +16,9 @@ class VST_Config
 		if (GetGame().IsServer())
 		{			
 		
-			if (!FileExist(SERIALIZATION_FOLDER))
+			if (!FileExist("$profile:CRDTN/Storage"))
 			{
-				MakeDirectory(SERIALIZATION_FOLDER);
+				MakeDirectory("$profile:CRDTN/Storage");
 			}
 
 			if (!FileExist(FULLPATH))
