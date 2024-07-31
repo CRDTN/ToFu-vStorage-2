@@ -168,7 +168,7 @@ tofuvStorageObj vstore(EntityAI item_in_storage, out bool m_didVStorage = false)
 		itemObj.itemAmmoQuantity = ammo_check.GetAmmoCount();
 	}
 
-	itemObj.itemHealth = item_in_storage.GetHealth();
+	itemObj.itemHealth = item_in_storage.GetHealthLevel();
 
 	if (item_in_storage.IsFood())
 	{
